@@ -1,6 +1,6 @@
 import { parseHitObjects, groupByTime, formatTime, parseLongNotes } from './common'
 
-export const checkMuriSaras = (fileContent: string): string[] => {
+export const checkRinsetsuSaras = (fileContent: string): string[] => {
   const columnCount = 16
   const hitObjects = parseHitObjects(fileContent)
   const timeMap = groupByTime(hitObjects)
@@ -12,17 +12,17 @@ export const checkMuriSaras = (fileContent: string): string[] => {
     const columns = xs.map(x => Math.floor(x * columnCount / 512))
     // 判定
     const has0 = columns.includes(0)
-    const has4to7 = columns.some(c => [4,5,6,7].includes(c))
+    const has1to3 = columns.some(c => [1,2,3].includes(c))
     const has15 = columns.includes(15)
-    const has8to11 = columns.some(c => [8,9,10,11].includes(c))
-    if ((has0 && has4to7) || (has15 && has8to11)) {
+    const has12to14 = columns.some(c => [12,13,14].includes(c))
+    if ((has0 && has1to3) || (has15 && has12to14)) {
       result.push(formatTime(time))
     }
   }
   return result
 }
 
-export const checkMuriLN = (fileContent: string): string[] => {
+export const checkRinsetsuLN = (fileContent: string): string[] => {
   const columnCount = 16
   const result: string[] = []
   
@@ -35,32 +35,32 @@ export const checkMuriLN = (fileContent: string): string[] => {
   
   for (const ln of longNotes) {
     // LNが4-7または8-11に配置されているかチェック
-    const isLNInDangerZone = 
-      ([4,5,6,7].includes(ln.column) || [8,9,10,11].includes(ln.column))
+    const isLNInWarningZone = 
+      ([1,2,3].includes(ln.column) || [12,13,14].includes(ln.column))
     
-    if (!isLNInDangerZone) continue
+    if (!isLNInWarningZone) continue
     
     // LNの開始時間から終了時間までの間に降ってくるノーツをチェック
-    let hasMuri = false
+    let hasRinsetsu = false
     for (const [time, xs] of timeMap.entries()) {
       if (time < ln.startTime || time > ln.endTime) continue
       
       const columns = xs.map(x => Math.floor(x * columnCount / 512))
       
-      // LNが4-7にある場合は0列をチェック
-      if ([4,5,6,7].includes(ln.column) && columns.includes(0)) {
-        hasMuri = true
+      // LNが1-3にある場合は0列をチェック
+      if ([1,2,3].includes(ln.column) && columns.includes(0)) {
+        hasRinsetsu = true
         break
       }
       
-      // LNが8-11にある場合は15列をチェック
-      if ([8,9,10,11].includes(ln.column) && columns.includes(15)) {
-        hasMuri = true
+      // LNが12-14にある場合は15列をチェック
+      if ([12,13,14].includes(ln.column) && columns.includes(15)) {
+        hasRinsetsu = true
         break
       }
     }
     
-    if (hasMuri) {
+    if (hasRinsetsu) {
       result.push(`${formatTime(ln.startTime)} - ${formatTime(ln.endTime)}`)
     }
   }

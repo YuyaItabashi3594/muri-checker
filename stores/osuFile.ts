@@ -1,25 +1,31 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
-export const useOsuFileStore = defineStore('osuFile', {
-  state: () => ({
-    fileContent: '' as string,
-    fileName: '' as string,
-  }),
-  getters: {
-    is16kMania(state): boolean {
-      const modeMatch = state.fileContent.match(/Mode:\s*3/)
-      const csMatch = state.fileContent.match(/CircleSize:\s*16/)
-      return !!modeMatch && !!csMatch
-    }
-  },
-  actions: {
-    setFile(content: string, name: string) {
-      this.fileContent = content
-      this.fileName = name
-    },
-    clearFile() {
-      this.fileContent = ''
-      this.fileName = ''
-    }
+export const useOsuFileStore = defineStore('osuFile', () => {
+  const fileContent = ref('')
+  const fileName = ref('')
+
+  const is16kMania = computed(() => {
+    const modeMatch = fileContent.value.match(/Mode:\s*3/)
+    const csMatch = fileContent.value.match(/CircleSize:\s*16/)
+    return !!modeMatch && !!csMatch
+  })
+
+  function setFile(content: string, name: string) {
+    fileContent.value = content
+    fileName.value = name
+  }
+
+  function clearFile() {
+    fileContent.value = ''
+    fileName.value = ''
+  }
+
+  return {
+    fileContent,
+    fileName,
+    is16kMania,
+    setFile,
+    clearFile
   }
 })
